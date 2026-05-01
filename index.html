@@ -1,0 +1,744 @@
+HTML = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhoneTrace — Phone Intelligence</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+*,
+*::before,
+*::after{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+}
+
+:root{
+    --bg:#080b10;
+    --surface:#0e1318;
+    --border:#1c2535;
+    --border2:#253045;
+    --accent:#00e5ff;
+    --accent2:#7b61ff;
+    --green:#00ffa3;
+    --red:#ff4d6d;
+    --yellow:#ffd166;
+    --text:#e8edf5;
+    --muted:#5a6a80;
+}
+
+body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Syne',sans-serif;
+    min-height:100vh;
+    overflow-x:hidden;
+}
+
+body::before{
+    content:'';
+    position:fixed;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(0,229,255,0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,255,0.025) 1px, transparent 1px);
+    background-size:40px 40px;
+    pointer-events:none;
+    z-index:0;
+}
+
+.wrap{
+    position:relative;
+    z-index:1;
+    max-width:880px;
+    margin:0 auto;
+    padding:44px 20px 80px;
+}
+
+/* Header */
+.header{
+    text-align:center;
+    margin-bottom:48px;
+}
+
+.logo-line{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:12px;
+    margin-bottom:10px;
+}
+
+.logo-icon{
+    width:46px;
+    height:46px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:13px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+}
+
+h1{
+    font-size:2.5rem;
+    font-weight:800;
+    letter-spacing:-1px;
+    background:linear-gradient(135deg,#fff 30%,var(--accent));
+    -webkit-background-clip:text;
+    -webkit-text-fill-color:transparent;
+}
+
+.tagline{
+    color:var(--muted);
+    font-family:'DM Mono',monospace;
+    font-size:0.8rem;
+    letter-spacing:2px;
+    text-transform:uppercase;
+}
+
+/* Search Card */
+.search-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:20px;
+    padding:28px;
+    margin-bottom:28px;
+}
+
+.input-row{
+    display:flex;
+    gap:12px;
+    flex-wrap:wrap;
+    align-items:flex-end;
+}
+
+.input-group{
+    flex:1;
+    min-width:200px;
+}
+
+.input-group label{
+    display:block;
+    font-family:'DM Mono',monospace;
+    font-size:0.68rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:1.5px;
+    margin-bottom:8px;
+}
+
+.input-group input{
+    width:100%;
+    background:#0a0e14;
+    border:1px solid var(--border2);
+    border-radius:10px;
+    padding:13px 16px;
+    color:var(--text);
+    font-family:'DM Mono',monospace;
+    font-size:0.95rem;
+    outline:none;
+    transition:border-color .2s, box-shadow .2s;
+}
+
+.input-group input:focus{
+    border-color:var(--accent);
+    box-shadow:0 0 0 3px rgba(0,229,255,0.1);
+}
+
+.input-group input::placeholder{
+    color:var(--muted);
+}
+
+.cred-notice{
+    background:rgba(255,209,102,0.07);
+    border:1px solid rgba(255,209,102,0.2);
+    border-radius:12px;
+    padding:12px 16px;
+    margin-bottom:20px;
+    font-family:'DM Mono',monospace;
+    font-size:0.78rem;
+    color:var(--yellow);
+}
+
+.cred-notice strong{
+    display:block;
+    margin-bottom:4px;
+}
+
+.btn-analyze{
+    padding:13px 32px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border:none;
+    border-radius:10px;
+    color:#080b10;
+    font-family:'Syne',sans-serif;
+    font-size:0.95rem;
+    font-weight:700;
+    cursor:pointer;
+    transition:opacity .2s, transform .1s;
+    white-space:nowrap;
+}
+
+.btn-analyze:hover{
+    opacity:0.85;
+    transform:translateY(-1px);
+}
+
+/* Error */
+.error-box{
+    background:rgba(255,77,109,0.08);
+    border:1px solid rgba(255,77,109,0.25);
+    border-radius:12px;
+    padding:16px 20px;
+    color:var(--red);
+    font-family:'DM Mono',monospace;
+    font-size:0.82rem;
+    margin-bottom:24px;
+    line-height:1.7;
+}
+
+.error-box strong{
+    display:block;
+    margin-bottom:6px;
+    font-size:0.88rem;
+}
+
+.error-box a{
+    color:var(--accent);
+    text-decoration:none;
+}
+
+.error-box a:hover{
+    text-decoration:underline;
+}
+
+/* Result header */
+.result-header{
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:20px;
+    padding:18px 22px;
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+}
+
+.validity-badge{
+    padding:6px 16px;
+    border-radius:20px;
+    font-family:'DM Mono',monospace;
+    font-size:0.75rem;
+    font-weight:500;
+    letter-spacing:1px;
+    text-transform:uppercase;
+}
+
+.valid{
+    background:rgba(0,255,163,0.1);
+    color:var(--green);
+    border:1px solid rgba(0,255,163,0.2);
+}
+
+.invalid{
+    background:rgba(255,77,109,0.1);
+    color:var(--red);
+    border:1px solid rgba(255,77,109,0.2);
+}
+
+.result-number{
+    font-family:'DM Mono',monospace;
+    font-size:1.25rem;
+    color:var(--accent);
+    letter-spacing:1px;
+}
+
+/* Caller Card */
+.caller-card{
+    background:linear-gradient(
+        135deg,
+        rgba(0,229,255,0.05),
+        rgba(123,97,255,0.05)
+    );
+    border:1px solid rgba(0,229,255,0.18);
+    border-radius:14px;
+    padding:18px 22px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    margin-bottom:16px;
+}
+
+.caller-avatar{
+    width:50px;
+    height:50px;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+    flex-shrink:0;
+}
+
+.caller-name-label{
+    font-family:'DM Mono',monospace;
+    font-size:0.63rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    margin-bottom:4px;
+}
+
+.caller-name-value{
+    font-size:1.35rem;
+    font-weight:700;
+    color:var(--text);
+}
+
+.caller-name-sub{
+    font-family:'DM Mono',monospace;
+    font-size:0.7rem;
+    color:var(--muted);
+    margin-top:3px;
+}
+
+/* Grids */
+.grid-2{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:14px;
+}
+
+.grid-3{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:14px;
+    margin-bottom:14px;
+}
+
+@media(max-width:600px){
+    .grid-2,
+    .grid-3{
+        grid-template-columns:1fr;
+    }
+
+    .input-row{
+        flex-direction:column;
+    }
+}
+
+.info-card{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:13px;
+    padding:16px 18px;
+    transition:border-color .2s;
+}
+
+.info-card:hover{
+    border-color:var(--border2);
+}
+
+.ic-label{
+    font-family:'DM Mono',monospace;
+    font-size:0.62rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:2px;
+    margin-bottom:8px;
+}
+
+.ic-icon{
+    font-size:1.3rem;
+    margin-bottom:8px;
+    display:block;
+}
+
+.ic-value{
+    font-size:1rem;
+    font-weight:600;
+    color:var(--text);
+}
+
+.ic-value.mono{
+    font-family:'DM Mono',monospace;
+    font-size:0.9rem;
+    color:var(--accent);
+}
+
+.line-pill{
+    display:inline-block;
+    padding:4px 14px;
+    border-radius:20px;
+    font-family:'DM Mono',monospace;
+    font-size:0.75rem;
+    font-weight:500;
+    text-transform:uppercase;
+    letter-spacing:1px;
+}
+
+.pill-mobile{
+    background:rgba(0,229,255,0.1);
+    color:var(--accent);
+    border:1px solid rgba(0,229,255,0.2);
+}
+
+.pill-landline{
+    background:rgba(255,209,102,0.1);
+    color:var(--yellow);
+    border:1px solid rgba(255,209,102,0.2);
+}
+
+.pill-voip{
+    background:rgba(123,97,255,0.1);
+    color:var(--accent2);
+    border:1px solid rgba(123,97,255,0.2);
+}
+
+.pill-unknown{
+    background:rgba(90,106,128,0.1);
+    color:var(--muted);
+    border:1px solid var(--border2);
+}
+
+/* Section */
+.section-label{
+    font-family:'DM Mono',monospace;
+    font-size:0.65rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:3px;
+    margin:24px 0 14px;
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.section-label::after{
+    content:'';
+    flex:1;
+    height:1px;
+    background:var(--border);
+}
+
+/* Report */
+.report-section{
+    background:var(--surface);
+    border:1px solid var(--border);
+    border-radius:16px;
+    overflow:hidden;
+    margin-top:8px;
+}
+
+.report-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:12px 18px;
+    border-bottom:1px solid var(--border);
+    background:#0b1016;
+}
+
+.report-title{
+    font-family:'DM Mono',monospace;
+    font-size:0.7rem;
+    color:var(--muted);
+    text-transform:uppercase;
+    letter-spacing:2px;
+}
+
+.report-btns{
+    display:flex;
+    gap:8px;
+}
+
+.btn-copy,
+.btn-txt{
+    padding:5px 14px;
+    border-radius:7px;
+    font-family:'DM Mono',monospace;
+    font-size:0.7rem;
+    cursor:pointer;
+    border:none;
+    transition:opacity .2s;
+}
+
+.btn-copy{
+    background:rgba(0,229,255,0.1);
+    color:var(--accent);
+    border:1px solid rgba(0,229,255,0.2);
+}
+
+.btn-txt{
+    background:rgba(90,106,128,0.12);
+    color:var(--muted);
+    border:1px solid var(--border2);
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+}
+
+.btn-copy:hover,
+.btn-txt:hover{
+    opacity:0.7;
+}
+
+#reportBox{
+    padding:20px;
+    font-family:'DM Mono',monospace;
+    font-size:0.77rem;
+    color:#8fa3bf;
+    white-space:pre-wrap;
+    overflow-x:auto;
+    line-height:1.85;
+    background:#060a0f;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrap">
+
+    <div class="header">
+        <div class="logo-line">
+            <div class="logo-icon">📡</div>
+            <h1>PhoneTrace</h1>
+        </div>
+
+        <p class="tagline">
+            Phone Number Intelligence · Powered by Twilio
+        </p>
+    </div>
+
+    {% if cred_error %}
+    <div class="cred-notice">
+        <strong>⚠ Credentials not configured</strong>
+
+        Open <code>app.py</code> and replace
+        <code>TWILIO_ACCOUNT_SID</code> and
+        <code>TWILIO_AUTH_TOKEN</code>
+        with your actual values.
+    </div>
+    {% endif %}
+
+    <div class="search-card">
+
+        <form action="/scan" method="get">
+
+            <div class="input-row">
+
+                <div class="input-group" style="flex:2;min-width:240px;">
+                    <label>Phone Number (with country code)</label>
+
+                    <input
+                        type="text"
+                        name="n"
+                        placeholder="+919973XXXXXX"
+                        required
+                        value="{{ form.n }}"
+                    >
+                </div>
+
+                <button type="submit" class="btn-analyze">
+                    Analyze →
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    {% if error %}
+    <div class="error-box">
+        <strong>⚠ {{ error.title }}</strong>
+
+        {{ error.detail }}
+
+        {% if error.fix %}
+            <br><br>
+            {{ error.fix | safe }}
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% if data %}
+
+    <div class="result-header">
+
+        <span class="validity-badge {{ 'valid' if data.valid else 'invalid' }}">
+            {{ '✓ Valid' if data.valid else '✗ Invalid' }}
+        </span>
+
+        <span class="result-number">
+            {{ data.intl_format or data.num }}
+        </span>
+
+    </div>
+
+    {% if data.caller_name %}
+    <div class="caller-card">
+
+        <div class="caller-avatar">👤</div>
+
+        <div>
+            <div class="caller-name-label">
+                Caller Name (CNAM)
+            </div>
+
+            <div class="caller-name-value">
+                {{ data.caller_name }}
+            </div>
+
+            <div class="caller-name-sub">
+                PhoneTrace: {{ data.caller_type or '—' }}
+            </div>
+        </div>
+
+    </div>
+    {% endif %}
+
+    <div class="section-label">Number Details</div>
+
+    <div class="grid-2">
+
+        <div class="info-card">
+            <span class="ic-icon">🌍</span>
+
+            <div class="ic-label">Country</div>
+
+            <div class="ic-value">
+                {{ data.country_name }}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <span class="ic-icon">📶</span>
+
+            <div class="ic-label">Carrier / Operator</div>
+
+            <div class="ic-value">
+                {{ data.carrier or '—' }}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid-3">
+
+        <div class="info-card">
+
+            <span class="ic-icon">📱</span>
+
+            <div class="ic-label">Line Type</div>
+
+            <div class="ic-value">
+
+                {% set lt = (data.line_type or 'unknown')|lower %}
+
+                {% if 'mobile' in lt %}
+                    <span class="line-pill pill-mobile">Mobile</span>
+
+                {% elif 'land' in lt or 'fixed' in lt %}
+                    <span class="line-pill pill-landline">Landline</span>
+
+                {% elif 'voip' in lt %}
+                    <span class="line-pill pill-voip">VoIP</span>
+
+                {% else %}
+                    <span class="line-pill pill-unknown">
+                        {{ data.line_type or 'Unknown' }}
+                    </span>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="info-card">
+            <span class="ic-icon">🔢</span>
+
+            <div class="ic-label">National Format</div>
+
+            <div class="ic-value mono">
+                {{ data.national_format or '—' }}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <span class="ic-icon">🌐</span>
+
+            <div class="ic-label">International Format</div>
+
+            <div class="ic-value mono">
+                {{ data.intl_format or '—' }}
+            </div>
+        </div>
+
+    </div>
+
+    <div class="section-label">Plain Text Report</div>
+
+    <div class="report-section">
+
+        <div class="report-header">
+
+            <span class="report-title">
+                Full Report
+            </span>
+
+            <div class="report-btns">
+
+                <button class="btn-copy" onclick="copyReport()">
+                    Copy All
+                </button>
+
+                <a
+                    class="btn-txt"
+                    href="/report?n={{ form.n|urlencode }}"
+                    target="_blank"
+                >
+                    Open as .txt
+                </a>
+
+            </div>
+
+        </div>
+
+        <div id="reportBox">
+{{ report }}
+        </div>
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+function copyReport(){
+    const t = document.getElementById('reportBox').innerText;
+
+    navigator.clipboard.writeText(t).then(()=>{
+        const b = document.querySelector('.btn-copy');
+
+        b.innerText = 'Copied!';
+
+        setTimeout(()=>{
+            b.innerText = 'Copy All';
+        },2000);
+    });
+}
+</script>
+
+</body>
+</html>
+'''
